@@ -9,7 +9,17 @@ public abstract class Node {
         return name;
     }
 
-    public abstract long getSize();
+    public abstract long getSize(SizeContext ctx);
 
-    public abstract boolean isDirectory();
+    public boolean isDirectory() {
+        return false;
+    }
+
+    public boolean isFile() {
+        return false;
+    }
+
+    public boolean isLink() {
+        return false;
+    }
 }

@@ -6,69 +6,55 @@ public final class PathUtil {
     private PathUtil() {}
 
     /**
-     * Validates and splits an absolute path into segments.
-     * Returns null if the path is invalid:
-     *   - contains "//"
-     *   - ends with "/" (unless it's just "/")
-     *   - contains "." or ".." as a segment
+     * Normalize an absolute path. Returns null if the path is not absolute.
+     * Handles: redundant /, ., .., trailing /.
+     * Root's parent is still root.
      */
-    public static String[] splitPath(String path) {
-        if (path == null || path.isEmpty()) {
+    public static String normalize(String path) {
+        if (path == null || path.isEmpty() || path.charAt(0) != '/') {
             return null;
         }
-        if (!path.startsWith("/")) {
-            return null;
-        }
-        // Root path
-        if (path.equals("/")) {
-            return new String[0];
-        }
-        // Trailing slash not allowed
-        if (path.endsWith("/")) {
-            return null;
-        }
-        // Split by "/", skip the first empty element before "/"
         String[] parts = path.split("/");
-        // parts[0] is always "" because path starts with "/"
-        List<String> segments = new ArrayList<>();
+        List<String> stack = new ArrayList<>();
         for (int i = 1; i < parts.length; i++) {
             String part = parts[i];
-            // "//" produces empty segments
-            if (part.isEmpty()) {
-                return null;
+            if (part.isEmpty() || part.equals(".")) {
+                continue;
             }
-            // "." or ".." not allowed
-            if (part.equals(".") || part.equals("..")) {
-                return null;
+            if (part.equals("..")) {
+                if (!stack.isEmpty()) {
+                    stack.remove(stack.size() - 1);
+                }
+            } else {
+                stack.add(part);
             }
-            segments.add(part);
         }
-        return segments.toArray(new String[0]);
+        if (stack.isEmpty()) {
+            return "/";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : stack) {
+            sb.append('/').append(s);
+        }
+        return sb.toString();
     }
 
-    /**
-     * Returns the parent path of a given absolute path, or null for root.
-     * Assumes the path is already validated.
-     */
-    public static String getParentPath(String path) {
-        if (path.equals("/")) {
+    public static String getParentPath(String normalizedPath) {
+        if (normalizedPath.equals("/")) {
             return null;
         }
-        int lastSlash = path.lastIndexOf('/');
+        int lastSlash = normalizedPath.lastIndexOf('/');
         if (lastSlash == 0) {
             return "/";
         }
-        return path.substring(0, lastSlash);
+        return normalizedPath.substring(0, lastSlash);
     }
 
-    /**
-     * Returns the last component (name) of a path.
-     */
-    public static String getBaseName(String path) {
-        if (path.equals("/")) {
+    public static String getBaseName(String normalizedPath) {
+        if (normalizedPath.equals("/")) {
             return "";
         }
-        int lastSlash = path.lastIndexOf('/');
-        return path.substring(lastSlash + 1);
+        int lastSlash = normalizedPath.lastIndexOf('/');
+        return normalizedPath.substring(lastSlash + 1);
     }
 }

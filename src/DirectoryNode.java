@@ -9,10 +9,13 @@ public class DirectoryNode extends Node {
     }
 
     @Override
-    public long getSize() {
+    public long getSize(SizeContext ctx) {
+        if (!ctx.visited.add(this)) {
+            return 0;
+        }
         long total = 0;
         for (Node child : children.values()) {
-            total += child.getSize();
+            total += child.getSize(ctx);
         }
         return total;
     }
@@ -28,6 +31,18 @@ public class DirectoryNode extends Node {
 
     public void putChild(Node node) {
         children.put(node.getName(), node);
+    }
+
+    public Node removeChild(String name) {
+        return children.remove(name);
+    }
+
+    public boolean hasChild(String name) {
+        return children.containsKey(name);
+    }
+
+    public boolean isEmpty() {
+        return children.isEmpty();
     }
 
     public Iterable<String> getChildNames() {

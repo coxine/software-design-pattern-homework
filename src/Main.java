@@ -32,10 +32,9 @@ public class Main {
                 if (tokens.length >= 3) {
                     try {
                         long size = Long.parseLong(tokens[2]);
-                        if (size < 0) {
-                            size = 0;
+                        if (size >= 0) {
+                            fs.touch(tokens[1], size);
                         }
-                        fs.touch(tokens[1], size);
                     } catch (NumberFormatException ignored) {
                     }
                 }
@@ -54,6 +53,24 @@ public class Main {
                     if (size != null) {
                         System.out.println(size);
                     }
+                }
+                break;
+            case "FIND":
+                if (tokens.length >= 3) {
+                    List<String> result = fs.find(tokens[1], tokens[2]);
+                    for (String p : result) {
+                        System.out.println(p);
+                    }
+                }
+                break;
+            case "RM":
+                if (tokens.length >= 2) {
+                    fs.rm(tokens[1]);
+                }
+                break;
+            case "LINK":
+                if (tokens.length >= 3) {
+                    fs.link(tokens[1], tokens[2]);
                 }
                 break;
         }
